@@ -1,5 +1,6 @@
 import 'package:bing_wallpaper_app/helpers/image_helper.dart';
 import 'package:bing_wallpaper_app/helpers/toast_helper.dart';
+import 'package:bing_wallpaper_app/services/bing_wallpaper.dart';
 import 'package:bing_wallpaper_app/widgets/bing_card_widget.dart';
 
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ class _HomePageState extends State<HomePage> {
   late bool isError;
   late String imageTitle;
   late String imageUrl;
+  late List<Photo> photos;
 
   @override
   void initState() {
@@ -28,6 +30,8 @@ class _HomePageState extends State<HomePage> {
 
     imageUrl = "";
     imageTitle = "Loading...";
+
+    photos = <Photo>[];
 
     _loadImages();
 
@@ -94,7 +98,14 @@ class _HomePageState extends State<HomePage> {
 
   void _loadImages() async {
     // Photo pic = await getImage(locationCode: 'jp');
-    Photo pic = await getImage();
+    final dateTime = DateTime.now();
+    List<Photo> wallpapers = await BingWallpaper(
+      bingStore: "",
+      location: "",
+      day: dateTime.day.toString(),
+      month: dateTime.month.toString(),
+      year: dateTime.year.toString(),
+    ).getImages();
 
     setState(() {
       _isLoading = false;
@@ -106,8 +117,9 @@ class _HomePageState extends State<HomePage> {
         imageTitle = "Something went wrong !";
         imageUrl = "";
       } else {
-        imageTitle = pic.title;
-        imageUrl = pic.url;
+        photos = wallpapers;
+        imageTitle = wallpapers.first.title;
+        imageUrl = wallpapers.first.url;
       }
     });
   }

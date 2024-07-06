@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:bing_wallpaper_app/pages/home_page.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +18,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return DynamicColorBuilder(builder: (lightColorScheme, darkColorScheme) {
       return MaterialApp(
+        scrollBehavior: CustomScrollBehavior(),
         debugShowCheckedModeBanner: false,
         title: 'Bing Wallpaper',
         theme: ThemeData(
@@ -31,4 +34,12 @@ class App extends StatelessWidget {
       );
     });
   }
+}
+
+class CustomScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+      };
 }

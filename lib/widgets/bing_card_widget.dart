@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class BingCardWidget extends StatelessWidget {
@@ -27,11 +28,14 @@ class BingCardWidget extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(20.0),
               child: url.isNotEmpty
-                  ? Image.network(
-                      url,
+                  ? CachedNetworkImage(
+                      imageUrl: url,
                       fit: BoxFit.fitHeight,
                       height: 845,
-                      loadingBuilder: imageLoader,
+                      placeholder: (context, url) =>
+                          const Center(child: CircularProgressIndicator()),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.error),
                     )
                   : Image.asset(
                       'assets/images/default_image.png',

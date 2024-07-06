@@ -45,6 +45,10 @@ dependencies:
             ref: master # branch name
     # Set Wallpaper on Android
     flutter_wallpaper_manager: ^0.0.4
+    http: ^1.2.1
+    html: ^0.15.4
+    intl: ^0.18.1
+    cached_network_image: ^3.3.1
 
 dev_dependencies:
     flutter_test:
