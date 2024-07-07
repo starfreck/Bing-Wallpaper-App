@@ -35,20 +35,23 @@ dependencies:
     # Use with the CupertinoIcons class for iOS style icons.
     cupertino_icons: ^1.0.2
     dynamic_color: ^1.6.6
-    # path_provider: ^2.0.15
-    file_saver: ^0.2.7
+    path_provider: ^2.1.3
     flutter_styled_toast: ^2.1.3
     # Set Wallpaper on Gnome
     wallman:
         git:
-            url: https://github.com/starfreck/wallman.git
+            url: https://github.com/imhemish/wallman.git
             ref: master # branch name
     # Set Wallpaper on Android
     flutter_wallpaper_manager: ^0.0.4
     http: ^1.2.1
     html: ^0.15.4
-    intl: ^0.18.1
+    intl: 0.19.0
     cached_network_image: ^3.3.1
+    internet_file: ^1.2.0
+    # It requires additional settings for ios
+    permission_handler: ^11.3.1
+    flutter_card_swiper: ^7.0.1
 
 dev_dependencies:
     flutter_test:
@@ -100,3 +103,7 @@ flutter:
     #
     # For details regarding fonts from package dependencies,
     # see https://flutter.dev/custom-fonts/#from-packages
+
+dependency_overrides:
+  ffi: any
+  http: any

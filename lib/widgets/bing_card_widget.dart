@@ -22,48 +22,53 @@ class BingCardWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(20.0),
       ),
       padding: const EdgeInsets.all(10.0),
-      child: Column(
-        children: [
-          if (!isError)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20.0),
-              child: url.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: url,
-                      fit: BoxFit.fitHeight,
-                      height: 845,
-                      placeholder: (context, url) =>
-                          const Center(child: CircularProgressIndicator()),
-                      errorWidget: (context, url, error) =>
-                          const Icon(Icons.error),
-                    )
-                  : Image.asset(
-                      'assets/images/default_image.png',
-                      fit: BoxFit.fitHeight,
-                      height: 845,
-                    ),
-            ),
-          if (isError)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20.0),
-              child: ColorFiltered(
-                colorFilter: ColorFilter.mode(
-                    Colors.red.withOpacity(0.7), BlendMode.color),
-                child: Image.asset(
-                  'assets/images/default_image.png',
-                  fit: BoxFit.fitHeight,
-                  height: 845,
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            if (!isError)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20.0),
+                child: url.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: url,
+                        fit: BoxFit.cover,
+                        height: 835,
+                        width: double.infinity,
+                        placeholder: (context, url) =>
+                            const Center(child: CircularProgressIndicator()),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.error),
+                      )
+                    : Image.asset(
+                        'assets/images/default_image.png',
+                        fit: BoxFit.cover,
+                        height: 835,
+                        width: double.infinity,
+                      ),
+              ),
+            if (isError)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20.0),
+                child: ColorFiltered(
+                  colorFilter: ColorFilter.mode(
+                      Colors.red.withOpacity(0.7), BlendMode.color),
+                  child: Image.asset(
+                    'assets/images/default_image.png',
+                    fit: BoxFit.cover,
+                    height: 835,
+                    width: double.infinity,
+                  ),
                 ),
               ),
+            const SizedBox(
+              height: 15,
             ),
-          const SizedBox(
-            height: 15,
-          ),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-        ],
+            Text(
+              title,
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -71,7 +76,7 @@ class BingCardWidget extends StatelessWidget {
   Widget imageLoader(context, child, loadingProgress) {
     if (loadingProgress == null) return child;
     return const SizedBox(
-      height: 845,
+      height: 835,
       width: double.infinity,
       child: Center(
         child: CircularProgressIndicator(

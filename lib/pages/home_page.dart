@@ -2,8 +2,8 @@ import 'package:bing_wallpaper_app/helpers/image_helper.dart';
 import 'package:bing_wallpaper_app/helpers/toast_helper.dart';
 import 'package:bing_wallpaper_app/services/bing_wallpaper.dart';
 import 'package:bing_wallpaper_app/widgets/bing_card_widget.dart';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 
 import '../models/photo.dart';
 
@@ -19,41 +19,57 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late bool _isLoading;
   late bool isError;
-  late String imageTitle;
-  late String imageUrl;
-  late List<Photo> photos;
+  late List<Photo> photos = [
+    const Photo(title: "Loading...", url: "", date: "", location: ""),
+  ];
+  int currentIndex = 0;
 
   @override
   void initState() {
     _isLoading = true;
     isError = false;
-
-    imageUrl = "";
-    imageTitle = "Loading...";
-
-    photos = <Photo>[];
-
     _loadImages();
-
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    print("photos.length: ${photos.length}");
+    print("photos.title: ${photos[0].title}");
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(10.0),
-        child: Center(
-          child: BingCardWidget(
-            title: imageTitle,
-            url: imageUrl,
-            isError: isError,
-          ),
-        ),
+      body: Flexible(
+        child: CardSwiper(
+            onEnd: () {},
+            onSwipe: (previousIndex, currentIndex, direction) {
+              if (direction == CardSwiperDirection.right ||
+                  previousIndex == photos.length - 1) {
+                return false;
+              }
+              setState(() {
+                this.currentIndex = currentIndex!;
+              });
+              return true;
+            },
+            isLoop: false,
+            cardsCount: photos.length,
+            numberOfCardsDisplayed: 1,
+            maxAngle: 20,
+            allowedSwipeDirection: const AllowedSwipeDirection.only(
+                left: true, right: true, down: true),
+            cardBuilder:
+                (context, index, percentThresholdX, percentThresholdY) {
+              return BingCardWidget(
+                title: photos[index].title,
+                url: photos[index].url,
+                isError: isError,
+              );
+            }),
       ),
+      // ),
 
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -97,7 +113,6 @@ class _HomePageState extends State<HomePage> {
   void _setLocation() {}
 
   void _loadImages() async {
-    // Photo pic = await getImage(locationCode: 'jp');
     final dateTime = DateTime.now();
     List<Photo> wallpapers = await BingWallpaper(
       bingStore: "",
@@ -110,27 +125,26 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _isLoading = false;
 
-      isError = false;
-
       if (isError) {
         isError = true;
-        imageTitle = "Something went wrong !";
-        imageUrl = "";
+        photos = [
+          const Photo(
+              title: "Something went wrong !", url: "", date: "", location: "")
+        ];
       } else {
+        isError = false;
         photos = wallpapers;
-        imageTitle = wallpapers.first.title;
-        imageUrl = wallpapers.first.url;
       }
     });
   }
 
   void _setAsWallpaper() async {
-    setAsWallpaper(imageUrl);
+    await PhotoHelper.setAsWallpaper(photos[currentIndex].url);
     _showToast("Wallpaper set successfully...");
   }
 
   void _downloadImage() async {
-    String message = await downloadImage(imageUrl);
+    String message = await PhotoHelper.downloadImage(photos[currentIndex].url);
     _showToast(message);
   }
 
