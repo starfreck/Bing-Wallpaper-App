@@ -41,35 +41,31 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Flexible(
-        child: CardSwiper(
-            onEnd: () {},
-            onSwipe: (previousIndex, currentIndex, direction) {
-              if (direction == CardSwiperDirection.right ||
-                  previousIndex == photos.length - 1) {
-                return false;
-              }
-              setState(() {
-                this.currentIndex = currentIndex!;
-              });
-              return true;
-            },
-            isLoop: false,
-            cardsCount: photos.length,
-            numberOfCardsDisplayed: 1,
-            maxAngle: 20,
-            allowedSwipeDirection: const AllowedSwipeDirection.only(
-                left: true, right: true, down: true),
-            cardBuilder:
-                (context, index, percentThresholdX, percentThresholdY) {
-              return BingCardWidget(
-                title: photos[index].title,
-                url: photos[index].url,
-                isError: isError,
-              );
-            }),
-      ),
-      // ),
+      body: CardSwiper(
+          onEnd: () {},
+          onSwipe: (previousIndex, currentIndex, direction) {
+            if (direction == CardSwiperDirection.right ||
+                previousIndex == photos.length - 1) {
+              return false;
+            }
+            setState(() {
+              this.currentIndex = currentIndex!;
+            });
+            return true;
+          },
+          isLoop: false,
+          cardsCount: photos.length,
+          numberOfCardsDisplayed: 1,
+          maxAngle: 0,
+          allowedSwipeDirection: const AllowedSwipeDirection.only(
+              left: true, right: true, down: true),
+          cardBuilder: (context, index, percentThresholdX, percentThresholdY) {
+            return BingCardWidget(
+              title: photos[index].title,
+              url: photos[index].url,
+              isError: isError,
+            );
+          }),
 
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -139,11 +135,13 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _setAsWallpaper() async {
+    _showToast("Setting as wallpaper...");
     await PhotoHelper.setAsWallpaper(photos[currentIndex].url);
     _showToast("Wallpaper set successfully...");
   }
 
   void _downloadImage() async {
+    _showToast("Downloading wallpaper...");
     String message = await PhotoHelper.downloadImage(photos[currentIndex].url);
     _showToast(message);
   }

@@ -31,7 +31,7 @@ class BingCardWidget extends StatelessWidget {
                 child: url.isNotEmpty
                     ? CachedNetworkImage(
                         imageUrl: url,
-                        fit: BoxFit.cover,
+                        fit: BoxFit.fitHeight,
                         height: 835,
                         width: double.infinity,
                         placeholder: (context, url) =>
@@ -39,12 +39,7 @@ class BingCardWidget extends StatelessWidget {
                         errorWidget: (context, url, error) =>
                             const Icon(Icons.error),
                       )
-                    : Image.asset(
-                        'assets/images/default_image.png',
-                        fit: BoxFit.cover,
-                        height: 835,
-                        width: double.infinity,
-                      ),
+                    : _defaultImage(),
               ),
             if (isError)
               ClipRRect(
@@ -52,12 +47,7 @@ class BingCardWidget extends StatelessWidget {
                 child: ColorFiltered(
                   colorFilter: ColorFilter.mode(
                       Colors.red.withOpacity(0.7), BlendMode.color),
-                  child: Image.asset(
-                    'assets/images/default_image.png',
-                    fit: BoxFit.cover,
-                    height: 835,
-                    width: double.infinity,
-                  ),
+                  child: _defaultImage(),
                 ),
               ),
             const SizedBox(
@@ -73,19 +63,12 @@ class BingCardWidget extends StatelessWidget {
     );
   }
 
-  Widget imageLoader(context, child, loadingProgress) {
-    if (loadingProgress == null) return child;
-    return const SizedBox(
+  Widget _defaultImage() {
+    return Image.asset(
+      'assets/images/default_image.png',
+      fit: BoxFit.fitHeight,
       height: 835,
       width: double.infinity,
-      child: Center(
-        child: CircularProgressIndicator(
-            // value: loadingProgress.expectedTotalBytes != null
-            //     ? loadingProgress.cumulativeBytesLoaded /
-            //         loadingProgress.expectedTotalBytes!
-            //     : null,
-            ),
-      ),
     );
   }
 }
