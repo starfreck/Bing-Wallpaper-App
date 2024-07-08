@@ -31,11 +31,10 @@ class BingCardWidget extends StatelessWidget {
                 child: url.isNotEmpty
                     ? CachedNetworkImage(
                         imageUrl: url,
-                        fit: BoxFit.fitHeight,
-                        height: 835,
+                        fit: BoxFit.cover,
+                        height: 700,
                         width: double.infinity,
-                        placeholder: (context, url) =>
-                            const Center(child: CircularProgressIndicator()),
+                        placeholder: (context, url) => _defaultImage(),
                         errorWidget: (context, url, error) =>
                             const Icon(Icons.error),
                       )
@@ -66,8 +65,8 @@ class BingCardWidget extends StatelessWidget {
   Widget _defaultImage() {
     return Image.asset(
       'assets/images/default_image.png',
-      fit: BoxFit.fitHeight,
-      height: 835,
+      fit: BoxFit.cover,
+      height: 700,
       width: double.infinity,
     );
   }
