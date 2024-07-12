@@ -1,4 +1,4 @@
-package com.example.bing_wallpaper_app
+package io.github.starfreck.bing_wallpaper_app
 
 import io.flutter.embedding.android.FlutterActivity
 

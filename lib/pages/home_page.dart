@@ -1,11 +1,10 @@
 import 'package:bing_wallpaper_app/helpers/image_helper.dart';
 import 'package:bing_wallpaper_app/helpers/toast_helper.dart';
+import 'package:bing_wallpaper_app/models/photo.dart';
 import 'package:bing_wallpaper_app/services/bing_wallpaper.dart';
 import 'package:bing_wallpaper_app/widgets/bing_card_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
-
-import '../models/photo.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.title});
@@ -20,7 +19,7 @@ class _HomePageState extends State<HomePage> {
   late bool _isLoading;
   late bool isError;
   late List<Photo> photos = [
-    const Photo(title: "Loading...", url: "", date: "", location: ""),
+    Photo(title: "Loading...", url: "", location: ""),
   ];
   int currentIndex = 0;
 
@@ -124,7 +123,6 @@ class _HomePageState extends State<HomePage> {
   void _loadImages() async {
     final dateTime = DateTime.now();
     List<Photo> wallpapers = await BingWallpaper(
-      bingStore: "",
       location: "",
       day: dateTime.day.toString(),
       month: dateTime.month.toString(),
@@ -137,8 +135,7 @@ class _HomePageState extends State<HomePage> {
       if (isError) {
         isError = true;
         photos = [
-          const Photo(
-              title: "Something went wrong !", url: "", date: "", location: "")
+          Photo(title: "Something went wrong !", url: "", location: "")
         ];
       } else {
         isError = false;
@@ -155,9 +152,12 @@ class _HomePageState extends State<HomePage> {
 
   void _downloadImage() async {
     _showToast("Downloading wallpaper...");
-    print(photos[currentIndex]);
-    String message = await PhotoHelper.downloadImage(photos[currentIndex].url);
-    _showToast(message);
+    String? message = await PhotoHelper.downloadImage(photos[currentIndex].url);
+    if (message != null) {
+      _showToast(message);
+    } else {
+      _showToast("Something went wrong with download...");
+    }
   }
 
   void _showToast(String message) {

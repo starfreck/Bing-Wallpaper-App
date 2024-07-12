@@ -1,27 +1,25 @@
+import 'package:html/dom.dart';
 import 'package:intl/intl.dart';
 import 'package:bing_wallpaper_app/models/photo.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:http/http.dart' as http;
 
 class BingWallpaper {
-  final String PEAPIX_URL = "https://peapix.com/bing";
-
-  String day;
-  String month;
-  String year;
-  late String url;
-  String location;
-  String bingStore;
+  final String baseUrl = "https://peapix.com/bing";
+  final String location;
+  final String year;
+  final String month;
+  final String day;
+  late final String url;
 
   BingWallpaper({
-    required this.bingStore,
     required this.location,
     required this.year,
     required this.month,
     required this.day,
   }) {
-    location = location.isEmpty ? "us" : location;
-    url = "$PEAPIX_URL/$location/$year/$month";
+    final locationOrDefault = location.isEmpty ? "us" : location;
+    url = "$baseUrl/$locationOrDefault/$year/$month";
   }
 
   Future<List<Photo>> getImages() async {
@@ -30,33 +28,29 @@ class BingWallpaper {
     final imagesListContainers =
         html.getElementsByClassName('image-list__container');
 
-    final photos = <Photo>[];
+    return imagesListContainers
+        .map((container) => _createPhotoFromContainer(container))
+        .toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
+  }
 
-    for (final container in imagesListContainers) {
-      final imageTitleElement =
-          container.getElementsByClassName("image-list__title").first;
-      final imageDateElement =
-          container.getElementsByClassName("text-gray").first;
-      final image =
-          container.getElementsByClassName("image-list__picture").first;
+  Photo _createPhotoFromContainer(Element container) {
+    final imageTitleElement =
+        container.getElementsByClassName("image-list__title").first;
+    final imageDateElement =
+        container.getElementsByClassName("text-gray").first;
+    final image = container.getElementsByClassName("image-list__picture").first;
 
-      DateFormat format = DateFormat('MMMM dd yyyy');
-      final dateTime = format.parse('${imageDateElement.text} $year');
+    final dateTime =
+        DateFormat('MMMM dd yyyy').parse('${imageDateElement.text} $year');
+    final imageUrl = image.attributes["data-bgset"]!;
+    final imageTitle = imageTitleElement.text;
 
-      final imageDate = '${dateTime.day}';
-      final imageUrl = image.attributes["data-bgset"]!.replaceFirst("_480", "");
-      final imageTitle = imageTitleElement.text;
-
-      final photo = Photo(
-        location: location,
-        date: imageDate,
-        title: imageTitle,
-        url: imageUrl,
-      );
-
-      photos.add(photo);
-    }
-
-    return photos;
+    return Photo(
+      location: location,
+      date: dateTime,
+      title: imageTitle,
+      url: imageUrl,
+    );
   }
 }

@@ -1,42 +1,26 @@
 import 'dart:io';
-
+import 'package:background_downloader/background_downloader.dart'
+    hide PermissionStatus;
 import 'package:bing_wallpaper_app/models/photo.dart';
 import 'package:flutter_wallpaper_manager/flutter_wallpaper_manager.dart';
-import 'package:internet_file/internet_file.dart';
-import 'package:internet_file/storage_io.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:wallman/wallman.dart';
 
-// Add more platforms (Platform.isIOS, Platform.isMacOS, Platform.isWindows) if needed.
+class Download {
+  String url;
+  Directory? storagePath;
+
+  Download({required this.url, required this.storagePath});
+}
 
 class PhotoHelper {
   Photo photo;
+
   PhotoHelper({required this.photo});
 
-  /// Downloads an image from the internet and returns its local path.
-  static Future<String> _download(String url, Directory storagePath) async {
-    final storageIO = InternetFileStorageIO();
-
-    final path = storagePath.path;
-    final fileName = url.split("/").last;
-
-    await InternetFile.get(
-      url,
-      storage: storageIO,
-      storageAdditional: storageIO.additional(
-        filename: fileName,
-        location: path,
-      ),
-    );
-
-    return '$path/$fileName';
-  }
-
-  /// Downloads an image and returns its local path based on the platform.
-  static Future<String> downloadImage(String url) async {
+  static Future<String?> downloadImage(String url) async {
     late Directory? appDir;
-    // Set Linux downloads directory
     if (Platform.isLinux) {
       appDir = await getDownloadsDirectory();
       appDir = await Directory('${appDir!.path}/../Pictures/BingWallpapers')
@@ -46,8 +30,8 @@ class PhotoHelper {
       appDir = await Directory('${appDir!.path}/BingWallpapers')
           .create(recursive: true);
     }
-    print('Storage Path ${appDir!.path}');
-    return await _download(url, appDir);
+
+    return await _download(Download(url: url, storagePath: appDir));
   }
 
   static Future<void> setAsWallpaper(String url) async {
@@ -58,37 +42,61 @@ class PhotoHelper {
     }
   }
 
-  /// Sets the image as wallpaper on Linux.
-  static void _setAsWallpaperOnLinux(String url) async {
-    dynamic wall = getBackend();
-    String wallpaper = await downloadImage(url);
-    wall.setWall(wallpaper);
-  }
-
-  /// Sets the image as wallpaper on Android.
-  static Future<bool> _setAsWallpaperOnAndroid(String url) async {
-    int location = WallpaperManager.HOME_SCREEN;
-    String wallpaper = await downloadImage(url);
-    await Future.delayed(const Duration(seconds: 10));
-    bool result = await WallpaperManager.setWallpaperFromFile(
-      wallpaper,
-      location,
-    );
-    return result;
-  }
-
   static Future<Directory?> _requestStoragePermission() async {
     PermissionStatus permissionResult =
         await Permission.manageExternalStorage.request();
     if (permissionResult == PermissionStatus.granted) {
-      // Permission granted, proceed with saving files.
-      print("Permission granted");
-      // await getExternalStorageDirectory();
       return Directory('/storage/emulated/0/Pictures');
     } else {
-      // Handle permission denied.
-      print("Permission denied");
       return await getApplicationDocumentsDirectory();
     }
+  }
+
+  static Future<String?> _download(Download downloadTask) async {
+    final path = downloadTask.storagePath!.path;
+    final url = downloadTask.url.replaceAll("_480", "");
+    final fileName = downloadTask.url.split("/").last;
+    final task = DownloadTask(
+      url: url,
+      filename: fileName,
+      headers: {
+        'User-Agent':
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36'
+      },
+      directory: path,
+      baseDirectory: BaseDirectory.root,
+      updates: Updates.statusAndProgress,
+      requiresWiFi: true,
+      retries: 5,
+      allowPause: true,
+    );
+
+    final result = await FileDownloader().download(task,
+        onProgress: (progress) => print('Progress: ${progress * 100}%'),
+        onStatus: (status) => print('Status: $status'));
+
+    switch (result.status) {
+      case TaskStatus.complete:
+        return '$path/$fileName';
+      default:
+        return null;
+    }
+  }
+
+  static void _setAsWallpaperOnLinux(String url) async {
+    Backend wall = getBackend();
+    String? wallpaper = await downloadImage(url);
+    if (wallpaper != null) {
+      await wall.setWall(wallpaper);
+    }
+  }
+
+  static Future<bool> _setAsWallpaperOnAndroid(String url) async {
+    int location = WallpaperManager.HOME_SCREEN;
+    String? wallpaper = await downloadImage(url);
+    if (wallpaper != null) {
+      return await WallpaperManager.setWallpaperFromFile(wallpaper, location);
+    }
+    return false;
   }
 }
