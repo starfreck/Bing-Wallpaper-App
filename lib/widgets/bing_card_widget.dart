@@ -7,14 +7,15 @@ class BingCardWidget extends StatelessWidget {
   final bool isError;
 
   const BingCardWidget({
-    super.key,
+    Key? key,
     required this.title,
     required this.url,
     required this.isError,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height - 170;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -22,65 +23,54 @@ class BingCardWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(20.0),
       ),
       padding: const EdgeInsets.all(10.0),
-      child: Column(
-        children: [
-          if (!isError)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20.0),
-              child: url.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: url,
-                      fit: BoxFit.fitHeight,
-                      height: 845,
-                      placeholder: (context, url) =>
-                          const Center(child: CircularProgressIndicator()),
-                      errorWidget: (context, url, error) =>
-                          const Icon(Icons.error),
-                    )
-                  : Image.asset(
-                      'assets/images/default_image.png',
-                      fit: BoxFit.fitHeight,
-                      height: 845,
-                    ),
-            ),
-          if (isError)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20.0),
-              child: ColorFiltered(
-                colorFilter: ColorFilter.mode(
-                    Colors.red.withOpacity(0.7), BlendMode.color),
-                child: Image.asset(
-                  'assets/images/default_image.png',
-                  fit: BoxFit.fitHeight,
-                  height: 845,
-                ),
-              ),
-            ),
-          const SizedBox(
-            height: 15,
-          ),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-        ],
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildImage(screenHeight),
+            const SizedBox(height: 15),
+            Text(title, style: Theme.of(context).textTheme.bodyLarge),
+          ],
+        ),
       ),
     );
   }
 
-  Widget imageLoader(context, child, loadingProgress) {
-    if (loadingProgress == null) return child;
-    return const SizedBox(
-      height: 845,
+  Widget _buildImage(double screenHeight) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20.0),
+      child: isError
+          ? _buildErrorImage(screenHeight)
+          : _buildNetworkImage(screenHeight),
+    );
+  }
+
+  Widget _buildNetworkImage(double screenHeight) {
+    return url.isNotEmpty
+        ? CachedNetworkImage(
+            imageUrl: url.replaceAll("_480", "_720"),
+            fit: BoxFit.cover,
+            height: screenHeight,
+            width: double.infinity,
+            placeholder: (context, url) => _defaultImage(screenHeight),
+            errorWidget: (context, url, error) => const Icon(Icons.error),
+          )
+        : _defaultImage(screenHeight);
+  }
+
+  Widget _buildErrorImage(double screenHeight) {
+    return ColorFiltered(
+      colorFilter:
+          ColorFilter.mode(Colors.red.withOpacity(0.7), BlendMode.color),
+      child: _defaultImage(screenHeight),
+    );
+  }
+
+  Widget _defaultImage(double screenHeight) {
+    return Image.asset(
+      'assets/images/default_image.png',
+      fit: BoxFit.cover,
+      height: screenHeight,
       width: double.infinity,
-      child: Center(
-        child: CircularProgressIndicator(
-            // value: loadingProgress.expectedTotalBytes != null
-            //     ? loadingProgress.cumulativeBytesLoaded /
-            //         loadingProgress.expectedTotalBytes!
-            //     : null,
-            ),
-      ),
     );
   }
 }
